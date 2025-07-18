@@ -1,0 +1,11 @@
+name: thcai-n8n
+channels:
+  - nodefaults
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      - compose-go >=2.20.2,<2.31.0
+      - sugar >=1.17
+      - makim >=1.27.0

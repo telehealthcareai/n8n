@@ -1,0 +1,111 @@
+exclude: "^docs/|/migrations/|devcontainer.json"
+default_stages: [commit]
+
+default_language_version:
+  python: python3.12
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-json
+      - id: check-toml
+      - id: check-xml
+      - id: debug-statements
+      - id: check-builtin-literals
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: detect-private-key
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: "v3.0.2"
+    hooks:
+      - id: prettier
+
+  - repo: https://github.com/adamchainz/django-upgrade
+    rev: "1.21.0"
+    hooks:
+      - id: django-upgrade
+        args: ["--target-version", "5.0"]
+
+  - repo: https://github.com/Riverside-Healthcare/djLint
+    rev: v1.32.1
+    hooks:
+      - id: djlint-reformat-django
+        files: "\\.html"
+        types_or: ["html"]
+        # it is necessary to exclude templates/tags because of the
+        # following issue:
+        #   - https://github.com/Riverside-Healthcare/djLint/issues/703
+        exclude: ".git|docs|.eggs|templates/tags|src/frontend/"
+      - id: djlint-django
+        files: "\\.html"
+        types_or: ["html"]
+        # it is necessary to exclude templates/tags because of the
+        # following issue:
+        #   - https://github.com/Riverside-Healthcare/djLint/issues/703
+        exclude: ".git|docs|.eggs|/templates/tags|src/frontend/"
+
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff-format
+        entry: ruff format
+        exclude: "docs/|scripts/.*|migrations/.*"
+        language: system
+        pass_filenames: true
+        types:
+          - python
+
+      - id: ruff-linter
+        name: ruff-linter
+        entry: ruff check
+        language: system
+        exclude: "docs/|scripts/.*|migrations/.*"
+        pass_filenames: true
+        types:
+          - python
+
+      - id: bandit
+        name: bandit
+        entry: bandit
+        language: system
+        args: ["--configfile", "pyproject.toml", "-iii", "-lll"]
+        pass_filenames: true
+        types:
+          - python
+
+      - id: vulture
+        name: vulture
+        entry: python scripts/run-vulture.py
+        language: system
+        description: Find unused Python code.
+        pass_filenames: false
+        types:
+          - python
+
+      # note: mccabe doesn't return a error code 1 when it finds functions with
+      #       high complexity
+      - id: mccabe
+        name: mccabe
+        # note: it would be nice to move this threshold to 10
+        entry: python -m mccabe --min 25
+        language: system
+        files: "src/"
+        pass_filenames: true
+        types:
+          - python
+
+      - id: mypy
+        name: mypy
+        entry: mypy .
+        language: system
+        pass_filenames: false
+
+# sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
+ci:
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false
