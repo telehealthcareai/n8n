@@ -52,18 +52,18 @@ jobs:
       # - name: Update npm
       #   run: npm -g update npm
 
-      - name: Run semantic release (for tests)
-        if: ${{ github.event_name != 'workflow_dispatch' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: makim release.dry
+      # - name: Run semantic release (for tests)
+      #   if: ${{ github.event_name != 'workflow_dispatch' }}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      #   run: makim release.dry
 
-      - name: Release command
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          makim release.ci
+      # - name: Release command
+      #   if: ${{ github.event_name == 'workflow_dispatch' }}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      #   run: |
+      #     makim release.ci
 
       # - name: Generate documentation with changes from semantic-release
       #   run: makim docs.build
