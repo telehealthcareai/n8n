@@ -60,7 +60,7 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: "latest"
-          environment-file: conda/dev.yaml
+          environment-file: conda/base.yaml
           channels: conda-forge,nodefaults
           activate-environment: thcai-n8n
           auto-update-conda: true
@@ -97,7 +97,7 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: "latest"
-          environment-file: conda/dev.yaml
+          environment-file: conda/base.yaml
           channels: conda-forge,nodefaults
           activate-environment: thcai-n8n
           auto-update-conda: true
@@ -106,8 +106,8 @@ jobs:
       - name: Build the Stack
         run: sugar compose build
 
-      - name: Start Postgres Service
-        run: sugar compose-ext restart --services postgres --options "-d"
+      - name: Start all containers
+        run: sugar compose-ext restart --options "-d"
 
       - name: Generate logs
         if: ${{ failure() }}
