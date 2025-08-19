@@ -1,0 +1,69 @@
+{
+  "branches": ["main"],
+  "tagFormat": "${version}",
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer", {
+        "preset": "conventionalcommits"
+    }],
+    [
+      "semantic-release-replace-plugin",
+      {
+        "replacements": [
+	        {
+            "files": ["pyproject.toml"],
+            "from": "version = \".*\"  # semantic-release",
+            "to": "version = \"${nextRelease.version}\"  # semantic-release",
+            "results": [
+              {
+                "file": "pyproject.toml",
+                "hasChanged": true,
+                "numMatches": 1,
+                "numReplacements": 1
+              }
+            ],
+            "countMatches": true
+          },
+          {
+            "files": ["src/config/__init__.py"],
+            "from": "__version__ = \".*\"  # semantic-release",
+            "to": "__version__ = \"${nextRelease.version}\"  # semantic-release",
+            "results": [
+              {
+                "file": "src/config/__init__.py",
+                "hasChanged": true,
+                "numMatches": 1,
+                "numReplacements": 1
+              }
+            ],
+            "countMatches": true
+          }
+        ]
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator", {
+        "preset": "conventionalcommits"
+      }
+    ],
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogTitle": "Release Notes\n---\n",
+        "changelogFile": "docs/changelog.md"
+      }
+    ],
+    "@semantic-release/github",
+    [
+      "@semantic-release/git",
+      {
+        "assets": [
+          "pyproject.toml",
+          "docs/changelog.md",
+          "src/config/__init__.py"
+        ],
+        "message": "chore(release): ${nextRelease.version}"
+      }
+    ]
+  ]
+}

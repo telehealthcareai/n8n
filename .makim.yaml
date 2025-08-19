@@ -1,0 +1,65 @@
+env-file: .envs/.env
+groups:
+  clean:
+    tasks:
+      tmp:
+        help: remove build artifacts, compiled files, and cache
+        backend: bash
+        run: |
+          find . -name '*.egg-info' -exec rm -rf {} +
+          find . -name '*.egg' -exec rm -f {} +
+          find . -name '*.pyc' -exec rm -f {} +
+          find . -name '*.pyo' -exec rm -f {} +
+          find . -name '__pycache__' -exec rm -rf {} +
+          find . -name '*~' -exec rm -f {} + || true
+          rm -rf build/
+          rm -rf dist/
+          rm -rf .eggs/
+          rm -f .coverage
+          rm -rf htmlcov/
+          rm -rf .pytest_cache
+          rm -rf .ruff_cache
+          rm -rf .mypy_cache
+
+  nginx:
+    tasks:
+      proxydomain:
+        help: Create SSL proxy configuration with CertBot for a domain
+        env-file: .envs/.env
+        run: |
+          python ./containers/nginx/scripts/generate_proxy_ui.py
+      generate-certificate:
+        help: Generate certificate
+        env-file: .envs/.env
+        run: |
+          bash ./containers/nginx/scripts/generate-certificates.sh
+      setup:
+        hooks:
+          pre-run:
+            - task: nginx.proxydomain
+            - task: nginx.generate-certificate
+
+  release:
+    vars:
+      app: |
+        npx --yes \
+          -p semantic-release \
+          -p conventional-changelog-conventionalcommits \
+          -p "@semantic-release/commit-analyzer" \
+          -p "@semantic-release/release-notes-generator" \
+          -p "@semantic-release/changelog" \
+          -p "@semantic-release/exec" \
+          -p "@semantic-release/github" \
+          -p "@semantic-release/git" \
+          -p "semantic-release-replace-plugin@1.2.7" \
+          semantic-release
+
+    tasks:
+      ci:
+        help: run semantic release on CI
+        run: ${{ vars.app }} --ci
+
+      dry:
+        help: run semantic release in dry-run mode
+        run: |
+          ${{ vars.app }} --dry-run

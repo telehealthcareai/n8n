@@ -1,7 +1,7 @@
 backend: compose
 env-file: .envs/.env
 defaults:
-  profile: prod
+  profile: dev
   project-name: thcain8n
 
 profiles:
@@ -12,7 +12,20 @@ profiles:
     services:
       default: 
         - postgres
-        - n8n
+        - thcai-n8n
+        - nginx
       available:
         - name: postgres
-        - name: n8n
+        - name: thcai-n8n
+
+  dev:
+    config-path:
+      - containers/compose.base.yaml
+    env-file: .envs/.env
+    services:
+      default: 
+        - postgres
+        - thcai-n8n
+      available:
+        - name: postgres
+        - name: thcai-n8n

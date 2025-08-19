@@ -23,48 +23,47 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          check-latest: true
+
       - name: Create environment variables files
         run: |
           export HOST_UID=$(id -u)
           export HOST_GID=$(id -g)
           pushd .envs
           envsubst < .env.tpl > .env
-          envsubst < .django.tpl > .django
-          envsubst < .postgres.tpl > .postgres
           popd
 
       - uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: "latest"
-          environment-file: conda/dev.yaml
+          environment-file: conda/base.yaml
           channels: conda-forge,nodefaults
-          activate-environment: mhai-web
+          activate-environment: thcai-n8n
           auto-update-conda: true
           conda-solver: libmamba
 
       - name: Create file with environment variables
         run: touch .env
 
-      - name: Install dependencies
-        run: |
-          poetry config virtualenvs.create false
-          poetry install
+      # - name: Update npm
+      #   run: npm -g update npm
 
-      - name: Update npm
-        run: npm -g update npm
+      # - name: Run semantic release (for tests)
+      #   if: ${{ github.event_name != 'workflow_dispatch' }}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      #   run: makim release.dry
 
-      - name: Run semantic release (for tests)
-        if: ${{ github.event_name != 'workflow_dispatch' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: makim release.dry
-
-      - name: Release command
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          makim release.ci
+      # - name: Release command
+      #   if: ${{ github.event_name == 'workflow_dispatch' }}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      #   run: |
+      #     makim release.ci
 
       # - name: Generate documentation with changes from semantic-release
       #   run: makim docs.build
