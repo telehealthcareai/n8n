@@ -23,6 +23,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          check-latest: true
+
       - name: Create environment variables files
         run: |
           export HOST_UID=$(id -u)
@@ -43,8 +49,8 @@ jobs:
       - name: Create file with environment variables
         run: touch .env
 
-      - name: Update npm
-        run: npm -g update npm
+      # - name: Update npm
+      #   run: npm -g update npm
 
       - name: Run semantic release (for tests)
         if: ${{ github.event_name != 'workflow_dispatch' }}
