@@ -43,11 +43,6 @@ jobs:
       - name: Create file with environment variables
         run: touch .env
 
-      - name: Install dependencies
-        run: |
-          poetry config virtualenvs.create false
-          poetry install
-
       - name: Update npm
         run: npm -g update npm
 
