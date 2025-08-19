@@ -12,7 +12,8 @@ profiles:
     services:
       default: 
         - postgres
-        - n8n
+        - thcai-n8n
+        - nginx
       available:
         - name: postgres
-        - name: n8n
+        - name: thcai-n8n

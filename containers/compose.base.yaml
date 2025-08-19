@@ -1,8 +1,12 @@
 version: '3.8'
 
 volumes:
-  db_storage:
-  n8n_storage:
+  mhai_web_media: {}
+  certbot_conf: {}
+  certbot_www: {}
+  static_root: {}
+  db_storage: {}
+  n8n_storage: {}
 
 services:
   postgres:
@@ -23,7 +27,7 @@ services:
       timeout: 5s
       retries: 10
 
-  n8n:
+  thcai-n8n:
     image: docker.n8n.io/n8nio/n8n
     restart: always
     environment:
@@ -33,12 +37,55 @@ services:
       - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
       - DB_POSTGRESDB_USER=${POSTGRES_NON_ROOT_USER}
       - DB_POSTGRESDB_PASSWORD=${POSTGRES_NON_ROOT_PASSWORD}
-    ports:
-      - 80:5678
-    links:
-      - postgres
-    volumes:
-      - n8n_storage:/home/node/.n8n
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      - n8n_storage:/home/node/.n8n
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5678/healthz >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  nginx:
+    hostname: literev-nginx
+    image: nginx:1.25.3
+    restart: unless-stopped
+    depends_on:
+      thcai-n8n:
+        condition: service_healthy
+    ports:
+      - 443:443
+      - 80:80
+    volumes:
+      - ../containers/nginx/data/config/prod:/etc/nginx/conf.d
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+      - static_root:/usr/share/nginx/html/${CERTBOT_DOMAIN}/static
+    healthcheck:
+      disable: true
+    command: >
+      /bin/sh -c 'while :; do
+        sleep 6h & wait $${!};
+        nginx -s reload;
+      done &
+      nginx -g "daemon off;"'
+
+  certbot:
+    image: certbot/certbot:v2.7.4
+    restart: unless-stopped
+    volumes:
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: >
+      /bin/sh -c '
+        trap exit TERM;
+        while :; do
+          certbot renew;
+          sleep 12h & wait $${!};
+        done;
+      '

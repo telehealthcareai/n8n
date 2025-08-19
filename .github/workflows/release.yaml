@@ -29,8 +29,6 @@ jobs:
           export HOST_GID=$(id -g)
           pushd .envs
           envsubst < .env.tpl > .env
-          envsubst < .django.tpl > .django
-          envsubst < .postgres.tpl > .postgres
           popd
 
       - uses: conda-incubator/setup-miniconda@v3
@@ -38,7 +36,7 @@ jobs:
           miniconda-version: "latest"
           environment-file: conda/dev.yaml
           channels: conda-forge,nodefaults
-          activate-environment: mhai-web
+          activate-environment: thcai-n8n
           auto-update-conda: true
           conda-solver: libmamba
 
